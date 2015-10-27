@@ -1,7 +1,7 @@
 % Tutorial on how to work with different flavours of web services for Earth Obersvation data
 % 1. netCDF-CF-OPeNDAP using netcdf4 package
-% 2. OGC WMS using owslib package
-% 3. OGC WCS using owslib package
+% 2. OGC WMS using owslib package, part of openearthtools
+% 3. OGC WCS using owslib package, part of openearthtools
 % For overview see OpenEarrth.eu > Data
 % Image(url='https://publicwiki.deltares.nl/download/attachments/42401809/OpenEarthBuildingBlocks_standards_client_server.png
 
