@@ -1,0 +1,321 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>EarthObservationWebServices</title><meta name="generator" content="MATLAB 8.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-10-27"><meta name="DC.source" content="EarthObservationWebServices.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">1. OPeNDAP: query indices, generate matlab code</a></li><li><a href="#3">render OPeNDAP</a></li><li><a href="#4">2.WCS</a></li><li><a href="#5">render WCS</a></li><li><a href="#6">3.WMS: NB sometimes fails to to slow server rendering</a></li><li><a href="#7">render WMS</a></li></ul></div><pre class="codeinput"><span class="comment">% Tutorial on how to work with different flavours of web services for Earth Obersvation data</span>
+<span class="comment">% 1. netCDF-CF-OPeNDAP using netcdf4 package</span>
+<span class="comment">% 2. OGC WMS using owslib package</span>
+<span class="comment">% 3. OGC WCS using owslib package</span>
+<span class="comment">% For overview see OpenEarrth.eu &gt; Data</span>
+<span class="comment">% Image(url='https://publicwiki.deltares.nl/download/attachments/42401809/OpenEarthBuildingBlocks_standards_client_server.png</span>
+
+bbox = [-10 50 15 60];
+clim = [0 10];
+</pre><h2>1. OPeNDAP: query indices, generate matlab code<a name="2"></a></h2><p><a href="http://zandmotor.citg.tudelft.nl/netcdfreadersguide/">http://zandmotor.citg.tudelft.nl/netcdfreadersguide/</a></p><pre class="codeinput">dap0 = <span class="string">'http://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/Chlorophyll/seawifs/aggregate__SEAWIFS_L3_CHLA_MONTHLY_9KM_R.ncml'</span>;
+
+nc.lat  = ncread(dap0, <span class="string">'lat'</span>);
+nc.lon  = ncread(dap0, <span class="string">'lon'</span>);
+nc.time = ncread_cf_time(dap0, <span class="string">'time'</span>);
+
+ilon  = find(nc.lon &gt;= bbox(1) &amp; nc.lon &lt;= bbox(3));
+ilat  = find(nc.lat &gt;= bbox(2) &amp; nc.lat &lt;= bbox(4));
+itime = 1;
+nc.l3m_data = ncread(dap0, <span class="string">'l3m_data'</span>, [ilon(1) ilat(1) itime], [length(ilon) length(ilat) 1], [1 1 1]); <span class="comment">% slow: 2D</span>
+</pre><h2>render OPeNDAP<a name="3"></a></h2><pre class="codeinput">    figure(<span class="string">'name'</span>,<span class="string">'OPeNDAP'</span>)
+    pcolorcorcen(nc.lon(ilon),nc.lat(ilat),nc.l3m_data')
+    tickmap(<span class="string">'ll'</span>);grid <span class="string">on</span>;
+    set(gca,<span class="string">'ydir'</span>,<span class="string">'normal'</span>)
+    caxis(clim)
+    axislat
+    title([<span class="string">'OPeNDAP: '</span>,datestr(nc.time(itime),<span class="string">'yyyy-mm-ddTHH:MM:SS'</span>)]);
+    [ax, h]=colorbarwithvtext(<span class="string">'OPeDAP'</span>);
+    print2screensizeoverwrite([<span class="string">'OPeNDAP_plotted_'</span>,datestr(nc.time(itime),30)])
+</pre><pre class="codeoutput">Warning: An empty directory name was given. No directory will be created.
+This syntax may not be supported in future releases. 
+</pre><img vspace="5" hspace="5" src="EarthObservationWebServices_01.png" alt=""> <h2>2.WCS<a name="4"></a></h2><pre>https://publicwiki.deltares.nl/display/OET/WCS+primer</pre><pre class="codeinput">wcs0 = <span class="string">'http://thredds.jpl.nasa.gov/thredds/wcs/ncml_aggregation/Chlorophyll/seawifs/aggregate__SEAWIFS_L3_CHLA_MONTHLY_9KM_R.ncml?'</span> <span class="comment">% service=WCS&amp;version=1.0.0&amp;request=GetCapabilities</span>
+[url.wcs,OPT.wcs,lims.wcs] = wcs(<span class="string">'server'</span>,wcs0,<span class="keyword">...</span>
+                         <span class="string">'axis'</span>,[-10 50 15 60],<span class="keyword">...</span>
+                         <span class="string">'format'</span>,<span class="string">'GeoTIFF'</span>,<span class="keyword">...</span><span class="comment">.</span>
+                         <span class="string">'time'</span>,<span class="string">'1997-09-01T00:00:00Z'</span>);
+dprintf(strrep(url.wcs,<span class="string">'&amp;'</span>,<span class="string">'\n&amp;'</span>))
+<span class="comment">% http://thredds.jpl.nasa.gov/thredds/wcs/ncml_aggregation/Chlorophyll/seawifs/aggregate__SEAWIFS_L3_CHLA_MONTHLY_9KM_R.ncml?</span>
+<span class="comment">% &amp;service=WCS</span>
+<span class="comment">% &amp;version=1.0.0</span>
+<span class="comment">% &amp;request=GetCoverage</span>
+<span class="comment">% &amp;bbox=-10,50,15,60</span>
+<span class="comment">% &amp;coverage=l3m_data</span>
+<span class="comment">% &amp;format=GeoTIFF</span>
+<span class="comment">% &amp;resx=</span>
+<span class="comment">% &amp;resy=</span>
+<span class="comment">% &amp;crs=OGC:CRS84</span>
+<span class="comment">% &amp;time=1997-09-01T00:00:00</span>
+wcsname = [<span class="string">'WCS_'</span>,OPT.wcs.coverage,<span class="string">'_'</span>,datestr(datenum(OPT.wcs.time,<span class="string">'yyyy-mm-ddTHH:MM:SS'</span>),30),<span class="string">'.'</span>,OPT.wcs.format];
+urlwrite(url.wcs,wcsname);
+</pre><pre class="codeoutput">
+wcs0 =
+
+http://thredds.jpl.nasa.gov/thredds/wcs/ncml_aggregation/Chlorophyll/seawifs/aggregate__SEAWIFS_L3_CHLA_MONTHLY_9KM_R.ncml?
+
+used WxS cache:C:\Users\UYJ\AppData\Local\Temp\matlab.ows\\thredds_jpl_nasa_gov_thredds_wcs_ncml_aggregation_Chlorophyll_seawifs_aggregate__SEAWIFS_L3_CHLA_MONTHLY_9KM_R_ncml_service_WCS_version_1_0_0_request_GetCapabilities.xml
+wxs:not valid: only valid option returned: l3m_data
+used WxS cache:C:\Users\UYJ\AppData\Local\Temp\matlab.ows\\thredds_jpl_nasa_gov_thredds_wcs_ncml_aggregation_Chlorophyll_seawifs_aggregate__SEAWIFS_L3_CHLA_MONTHLY_9KM_R_ncml_service_WCS_version_1_0_0_request_DescribeCoverage_coverage_l3m_data.xml
+
+OPT = 
+
+           server: 'http://thredds.jpl.nasa.gov/thredds/wcs/ncml_aggregati...'
+          version: '1.0.0'
+          request: 'GetCoverage'
+         coverage: 'l3m_data'
+             axis: [-10 50 15 60]
+             bbox: ''
+           format: 'GeoTIFF'
+              crs: 'EPSG%3A4326'
+             resx: []
+             resy: []
+    interpolation: ''
+             time: '1997-09-01T00:00:00Z'
+             disp: 1
+         cachedir: 'C:\Users\UYJ\AppData\Local\Temp\matlab.ows\'
+         fixqmark: 1
+
+wxs:validated: a format="GeoTIFF"
+wxs:not valid: a crs="EPSG%3A4326", choose from valid options:
+wxs:not valid: only valid option returned: OGC:CRS84
+wxs:not valid: only valid option returned: none
+http://thredds.jpl.nasa.gov/thredds/wcs/ncml_aggregation/Chlorophyll/seawifs/aggregate__SEAWIFS_L3_CHLA_MONTHLY_9KM_R.ncml?
+&amp;service=WCS
+&amp;version=1.0.0
+&amp;request=GetCoverage
+&amp;bbox=-10,50,15,60
+&amp;coverage=l3m_data
+&amp;format=GeoTIFF
+&amp;resx=
+&amp;resy=
+&amp;crs=OGC:CRS84
+&amp;time=1997-09-01T00:00:00</pre><h2>render WCS<a name="5"></a></h2><pre class="codeinput">    figure(<span class="string">'name'</span>,OPT.wcs.coverage)
+    [A,map,alpha] = imread(wcsname);
+    A = double(A);A(A==0)=NaN;
+    OPT.wcs.x = linspace(OPT.wcs.axis(1),OPT.wcs.axis(3),size(A,2));
+    OPT.wcs.y = linspace(OPT.wcs.axis(4),OPT.wcs.axis(2),size(A,1));
+    pcolorcorcen(OPT.wcs.x,OPT.wcs.y,double(A))
+    tickmap(<span class="string">'ll'</span>);grid <span class="string">on</span>;
+    set(gca,<span class="string">'ydir'</span>,<span class="string">'normal'</span>)
+    axislat
+    title([<span class="string">'WCS: '</span>,OPT.wcs.time]);
+    colorbar
+    caxis(clim)
+    [ax, h]=colorbarwithvtext(OPT.wcs.coverage);
+    print2screensizeoverwrite([<span class="string">'WCS_plotted_'</span>,mkvar(OPT.wcs.time)])
+</pre><pre class="codeoutput">Warning: An empty directory name was given. No directory will be created.
+This syntax may not be supported in future releases. 
+</pre><img vspace="5" hspace="5" src="EarthObservationWebServices_02.png" alt=""> <h2>3.WMS: NB sometimes fails to to slow server rendering<a name="6"></a></h2><pre>https://publicwiki.deltares.nl/display/OET/WMS+primer</pre><pre class="codeinput">wms0 = <span class="string">'http://thredds.jpl.nasa.gov/thredds/wms/ncml_aggregation/Chlorophyll/seawifs/aggregate__SEAWIFS_L3_CHLA_MONTHLY_9KM_R.ncml?'</span>; <span class="comment">% service=WMS&amp;version=1.3.0&amp;request=GetCapabilities</span>
+[url.wms,OPT.wms,lims.wms] = wms(<span class="string">'server'</span>,wms0,<span class="keyword">...</span>
+                <span class="string">'colorscalerange'</span>,clim,<span class="keyword">...</span><span class="comment"> % non-OGC extension</span>
+                <span class="string">'styles'</span>,<span class="string">'boxfill/sst_36'</span>,<span class="keyword">...</span>
+                <span class="string">'time'</span>,<span class="string">'1997-09-01T00:00:00.000Z'</span>,<span class="keyword">...</span>
+                <span class="string">'axis'</span>,bbox); <span class="comment">% spatial subet: speed-up</span>
+dprintf(strrep(url.wms,<span class="string">'&amp;'</span>,<span class="string">'\n&amp;'</span>))
+<span class="comment">% http://thredds.jpl.nasa.gov/thredds/wms/ncml_aggregation/Chlorophyll/seawifs/aggregate__SEAWIFS_L3_CHLA_MONTHLY_9KM_R.ncml?</span>
+<span class="comment">% &amp;service=WMS</span>
+<span class="comment">% &amp;version=1.3.0</span>
+<span class="comment">% &amp;request=GetMap</span>
+<span class="comment">% &amp;bbox=50,-10,60,15</span>
+<span class="comment">% &amp;layers=l3m_data</span>
+<span class="comment">% &amp;format=image/png</span>
+<span class="comment">% &amp;CRS=EPSG</span>
+wmsname = [<span class="string">'WMS_'</span>,OPT.wms.layers,<span class="string">'_'</span>,datestr(datenum(OPT.wms.time,<span class="string">'yyyy-mm-ddTHH:MM:SS'</span>),30),OPT.wms.ext];
+urlwrite(url.wms,wmsname);
+</pre><pre class="codeoutput">used WxS cache:C:\Users\UYJ\AppData\Local\Temp\matlab.ows\\thredds_jpl_nasa_gov_thredds_wms_ncml_aggregation_Chlorophyll_seawifs_aggregate__SEAWIFS_L3_CHLA_MONTHLY_9KM_R_ncml_service_WMS_version_1_3_0_request_GetCapabilities.xml
+wxs:not valid: only valid option returned: l3m_data
+crs=CRS:84 to be used instead of crs=EPSG:4326 to prevent mixing-up lat-lon in THREDDS
+http://thredds.jpl.nasa.gov/thredds/wms/ncml_aggregation/Chlorophyll/seawifs/aggregate__SEAWIFS_L3_CHLA_MONTHLY_9KM_R.ncml?
+&amp;service=WMS
+&amp;version=1.3.0
+&amp;request=GetMap
+&amp;bbox=50,-10,60,15
+&amp;layers=l3m_data
+&amp;format=image/png
+&amp;CRS=EPSG</pre><h2>render WMS<a name="7"></a></h2><pre class="codeinput">    figure(<span class="string">'name'</span>,OPT.wms.layers)
+    [A,map,alpha] = imread(wmsname);
+    image(OPT.wms.x,OPT.wms.y,A)
+    colormap(map)
+    tickmap(<span class="string">'ll'</span>);grid <span class="string">on</span>;
+    set(gca,<span class="string">'ydir'</span>,<span class="string">'normal'</span>)
+    axislat
+    title([<span class="string">'WMS: '</span>,OPT.wms.time]);
+    [ax, h]=colorbarwithvtext(OPT.wms.layers);
+    set(ax,<span class="string">'YTickLabel'</span>,get(ax,<span class="string">'YTick'</span>)./size(map,1).*clim(2));
+    print2screensizeoverwrite([<span class="string">'WMS_plotted_'</span>,mkvar(OPT.wcs.time)])
+</pre><pre class="codeoutput">Warning: An empty directory name was given. No directory will be created.
+This syntax may not be supported in future releases. 
+</pre><img vspace="5" hspace="5" src="EarthObservationWebServices_03.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+% Tutorial on how to work with different flavours of web services for Earth Obersvation data
+% 1. netCDF-CF-OPeNDAP using netcdf4 package
+% 2. OGC WMS using owslib package
+% 3. OGC WCS using owslib package
+% For overview see OpenEarrth.eu > Data
+% Image(url='https://publicwiki.deltares.nl/download/attachments/42401809/OpenEarthBuildingBlocks_standards_client_server.png
+
+bbox = [-10 50 15 60];
+clim = [0 10];
+
+%% 1. OPeNDAP: query indices, generate matlab code
+% http://zandmotor.citg.tudelft.nl/netcdfreadersguide/
+dap0 = 'http://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/Chlorophyll/seawifs/aggregate__SEAWIFS_L3_CHLA_MONTHLY_9KM_R.ncml';
+
+nc.lat  = ncread(dap0, 'lat');
+nc.lon  = ncread(dap0, 'lon');
+nc.time = ncread_cf_time(dap0, 'time');
+
+ilon  = find(nc.lon >= bbox(1) & nc.lon <= bbox(3));
+ilat  = find(nc.lat >= bbox(2) & nc.lat <= bbox(4));
+itime = 1;
+nc.l3m_data = ncread(dap0, 'l3m_data', [ilon(1) ilat(1) itime], [length(ilon) length(ilat) 1], [1 1 1]); % slow: 2D
+
+    %% render OPeNDAP
+    figure('name','OPeNDAP')
+    pcolorcorcen(nc.lon(ilon),nc.lat(ilat),nc.l3m_data')
+    tickmap('ll');grid on;
+    set(gca,'ydir','normal')
+    caxis(clim)
+    axislat
+    title(['OPeNDAP: ',datestr(nc.time(itime),'yyyy-mm-ddTHH:MM:SS')]);
+    [ax, h]=colorbarwithvtext('OPeDAP');
+    print2screensizeoverwrite(['OPeNDAP_plotted_',datestr(nc.time(itime),30)])
+    
+%% 2.WCS
+%  https://publicwiki.deltares.nl/display/OET/WCS+primer
+wcs0 = 'http://thredds.jpl.nasa.gov/thredds/wcs/ncml_aggregation/Chlorophyll/seawifs/aggregate__SEAWIFS_L3_CHLA_MONTHLY_9KM_R.ncml?' % service=WCS&version=1.0.0&request=GetCapabilities
+[url.wcs,OPT.wcs,lims.wcs] = wcs('server',wcs0,...
+                         'axis',[-10 50 15 60],...
+                         'format','GeoTIFF',....
+                         'time','1997-09-01T00:00:00Z');
+dprintf(strrep(url.wcs,'&','\n&'))
+% http://thredds.jpl.nasa.gov/thredds/wcs/ncml_aggregation/Chlorophyll/seawifs/aggregate__SEAWIFS_L3_CHLA_MONTHLY_9KM_R.ncml?
+% &service=WCS
+% &version=1.0.0
+% &request=GetCoverage
+% &bbox=-10,50,15,60
+% &coverage=l3m_data
+% &format=GeoTIFF
+% &resx=
+% &resy=
+% &crs=OGC:CRS84
+% &time=1997-09-01T00:00:00
+wcsname = ['WCS_',OPT.wcs.coverage,'_',datestr(datenum(OPT.wcs.time,'yyyy-mm-ddTHH:MM:SS'),30),'.',OPT.wcs.format];            
+urlwrite(url.wcs,wcsname);
+    %% render WCS
+    figure('name',OPT.wcs.coverage)
+    [A,map,alpha] = imread(wcsname);
+    A = double(A);A(A==0)=NaN;
+    OPT.wcs.x = linspace(OPT.wcs.axis(1),OPT.wcs.axis(3),size(A,2));
+    OPT.wcs.y = linspace(OPT.wcs.axis(4),OPT.wcs.axis(2),size(A,1));
+    pcolorcorcen(OPT.wcs.x,OPT.wcs.y,double(A))
+    tickmap('ll');grid on;
+    set(gca,'ydir','normal')
+    axislat
+    title(['WCS: ',OPT.wcs.time]);
+    colorbar
+    caxis(clim)
+    [ax, h]=colorbarwithvtext(OPT.wcs.coverage);
+    print2screensizeoverwrite(['WCS_plotted_',mkvar(OPT.wcs.time)])
+    
+%% 3.WMS: NB sometimes fails to to slow server rendering
+%  https://publicwiki.deltares.nl/display/OET/WMS+primer
+wms0 = 'http://thredds.jpl.nasa.gov/thredds/wms/ncml_aggregation/Chlorophyll/seawifs/aggregate__SEAWIFS_L3_CHLA_MONTHLY_9KM_R.ncml?'; % service=WMS&version=1.3.0&request=GetCapabilities
+[url.wms,OPT.wms,lims.wms] = wms('server',wms0,...
+                'colorscalerange',clim,... % non-OGC extension
+                'styles','boxfill/sst_36',...
+                'time','1997-09-01T00:00:00.000Z',...
+                'axis',bbox); % spatial subet: speed-up
+dprintf(strrep(url.wms,'&','\n&'))
+% http://thredds.jpl.nasa.gov/thredds/wms/ncml_aggregation/Chlorophyll/seawifs/aggregate__SEAWIFS_L3_CHLA_MONTHLY_9KM_R.ncml?
+% &service=WMS
+% &version=1.3.0
+% &request=GetMap
+% &bbox=50,-10,60,15
+% &layers=l3m_data
+% &format=image/png
+% &CRS=EPSG
+wmsname = ['WMS_',OPT.wms.layers,'_',datestr(datenum(OPT.wms.time,'yyyy-mm-ddTHH:MM:SS'),30),OPT.wms.ext];            
+urlwrite(url.wms,wmsname);
+    %% render WMS
+    figure('name',OPT.wms.layers)
+    [A,map,alpha] = imread(wmsname);
+    image(OPT.wms.x,OPT.wms.y,A)
+    colormap(map)
+    tickmap('ll');grid on;
+    set(gca,'ydir','normal')
+    axislat
+    title(['WMS: ',OPT.wms.time]);
+    [ax, h]=colorbarwithvtext(OPT.wms.layers);
+    set(ax,'YTickLabel',get(ax,'YTick')./size(map,1).*clim(2));
+    print2screensizeoverwrite(['WMS_plotted_',mkvar(OPT.wcs.time)])
+
+##### SOURCE END #####
+--></body></html>
